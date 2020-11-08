@@ -62,12 +62,12 @@ def kirjaudu():
         return redirect(url_for("kirjauduttu"))
     if form.validate_on_submit():
         user = Kayttajat.query.filter_by(nimi=form.kayttaja_nimi.data).first()
-        sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
-        porttikielto_haku = db.session.execute(sql, {"kayttaja":user.id})
-        onko_porttikielto = porttikielto_haku.fetchall()
-        if onko_porttikielto:
-            return "<h2>Sinulla on porttikielto!</h2>"
         if user:
+            sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
+            porttikielto_haku = db.session.execute(sql, {"kayttaja":user.id})
+            onko_porttikielto = porttikielto_haku.fetchall()
+            if onko_porttikielto:
+                return "<h2>Sinulla on porttikielto!</h2>"
             if check_password_hash(user.salasana, form.salasana.data):
                 login_user(user)
                 return redirect(url_for("kirjauduttu"))
@@ -200,4 +200,5 @@ def oma_profiili():
     sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
     sqlhaku = db.session.execute(sql, {"kayttaja":current_user.id})
     omattiedot = sqlhaku.fetchall()
+    print(omattiedot)
     return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omattiedot=omattiedot, lomake=True, nimi=current_user.nimi)
