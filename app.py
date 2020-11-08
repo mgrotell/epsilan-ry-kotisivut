@@ -193,12 +193,11 @@ def oma_profiili():
             sql = "UPDATE Omattiedot set lempiolut=:olut, kuvaus=:kirjoitus WHERE kayttaja_id=:kayttaja"
             db.session.execute(sql, {"olut":form.olut.data, "kirjoitus":form.kuvaus.data,"kayttaja":current_user.id})
             db.session.commit()
-            return redirect(url_for("omaprofiili"))
+            return redirect(url_for("oma_profiili"))
         sql = "INSERT INTO Omattiedot (kayttaja_id, lempiolut, kuvaus) VALUES (:kayttaja, :olut, :kirjoitus)"
         db.session.execute(sql, {"kayttaja":current_user.id, "olut":form.olut.data, "kirjoitus":form.kuvaus.data})
         db.session.commit()
     sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
     sqlhaku = db.session.execute(sql, {"kayttaja":current_user.id})
     omattiedot = sqlhaku.fetchall()
-    print(omattiedot)
     return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omattiedot=omattiedot, lomake=True, nimi=current_user.nimi)
