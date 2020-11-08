@@ -1,0 +1,128 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+<!doctype html>
+<style>
+    .reunat {
+        margin: auto;
+        width: 100%;
+        border: 1px solid black;
+        padding: 30px;
+      }
+  </style>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<title>Epsilan ry</title>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+      <a class="navbar-brand" href="/kirjauduttu">Epsilan ry</a>
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/kalenteri">Kalenteri</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/omaprofiili">Oma profiili</a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/toplista">Top-lista</a>
+          </li>
+          {% if isadmin %}
+        <li class="nav-item">
+            <a class="nav-link" href="/uusitapahtuma">Uusi tapahtuma</a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/kayttajat">Anna porttikielto</a>
+          </li>
+          {% endif %}
+      </ul>
+    </div>
+    <a href="/kirjauduulos"><button type="submit" class="btn btn-primary">Kirjaudu ulos</button></a>
+  </nav>
+
+  {% for tapahtuma in tapahtumat %}
+  <div class="reunat"> 
+      <h2>
+        <form method="POST" action="/ilmoittaudu">
+        {{ tapahtuma[0] + "    " +  tapahtuma[2] }}
+        <input type="hidden" name="tapahtumaid" value="{{ tapahtuma[3] }}">
+        <button type="submit" class="btn btn-primary">Ilmoittaudu</button>
+        </form>
+      </h2>
+      <div>
+      {{ tapahtuma[1] }} </div>
+      <b>Vastuuhenkilö: </b>
+    {{ tapahtuma[4] }}
+  </div>
+  {% endfor %}
+
+  {% for tulos in tulokset %}
+  <div class="reunat"> 
+      <h2>
+        {{ tulos[0]}}
+      </h2>
+      <div>
+        Ilmoittautumisia:
+        <b>{{ tulos[1]}}</b> 
+      </div>
+  </div>
+  {% endfor %}
+
+  {% if isadmin %}
+  {% for nimi in nimet %}
+  <div class="reunat">
+      <h2>
+        <form method="POST" action="/porttikielto">
+            {{ nimi[0] }}
+            <input type="hidden" name="porttikieltoid" value="{{ nimi[1] }}">
+            <button type="submit" class="btn btn-primary">Anna porttikielto</button>
+        </form>
+      </h2>
+  </div>
+  {% endfor %}
+
+  {% if uusitapahtuma %}
+  <form method="POST" action="/uusitapahtuma">
+    <div class="reunat">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.nimi) }}
+      {{ wtf.form_field(form.kuvaus) }}
+      {{ wtf.form_field(form.aika) }}
+    <button type="submit" class="btn btn-primary">Rekisteröi</button>
+    </div>
+  </form>
+  
+  {% endif %}
+  {% endif %}
+
+  {% if lomake %}
+
+  <b>
+    Käyttäjänimi:   </b>
+    {{nimi}}
+    <div>
+
+  {% if omattiedot %}
+    <div>
+        <b>Lempiolut:   </b>
+        {{omattiedot[0][1]}}
+        <div>
+            <b>Kuvaus:   </b>
+            {{omattiedot[0][0]}}
+            </div>
+    </div>
+
+  {% endif %}
+  <form method="POST" action="/omaprofiili">
+    <div class="reunat">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.olut) }}
+      {{ wtf.form_field(form.kuvaus) }}
+    <button type="submit" class="btn btn-primary">Tallenna</button>
+    </div>
+  </form>
+  {% endif %}
+
+  <img class="reunat" src="{{url_for("static", filename="timos.jpg")}}"/>
