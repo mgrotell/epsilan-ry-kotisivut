@@ -200,5 +200,4 @@ def oma_profiili():
     sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
     sqlhaku = db.session.execute(sql, {"kayttaja":current_user.id})
     omattiedot = sqlhaku.fetchall()
-    print(omattiedot)
     return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omattiedot=omattiedot, lomake=True, nimi=current_user.nimi)
