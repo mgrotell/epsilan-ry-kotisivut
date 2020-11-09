@@ -33,3 +33,13 @@
     <button type="submit" class="btn btn-primary">Kirjaudu</button>
     </div>
   </form>
+
+  {% with viestit = get_flashed_messages() %}
+    {% if viestit %}
+        {% for viesti in viestit %}
+            <div class="alert alert-primary" role="alert">
+                <b>{{ viesti }}</b>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}

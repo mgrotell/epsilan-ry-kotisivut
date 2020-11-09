@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, DateField
@@ -52,6 +52,7 @@ class omat_tiedot_lomake_f(FlaskForm):
 @app.route("/")
 def index():
     if current_user.is_authenticated:
+        flash("Olet jo kirjautunut.")
         return redirect(url_for("kirjauduttu"))
     return render_template("index.html")
 
@@ -59,6 +60,7 @@ def index():
 def kirjaudu():
     form = kirjaudu_f()
     if current_user.is_authenticated:
+        flash("Olet jo kirjautunut.")
         return redirect(url_for("kirjauduttu"))
     if form.validate_on_submit():
         user = Kayttajat.query.filter_by(nimi=form.kayttaja_nimi.data).first()
@@ -67,26 +69,31 @@ def kirjaudu():
             porttikielto_haku = db.session.execute(sql, {"kayttaja":user.id})
             onko_porttikielto = porttikielto_haku.fetchall()
             if onko_porttikielto:
-                return "<h2>Sinulla on porttikielto!</h2>"
+                flash("Sinulla on porttikielto.")
+                return render_template("kirjaudu.html", form=form)
             if check_password_hash(user.salasana, form.salasana.data):
                 login_user(user)
                 return redirect(url_for("kirjauduttu"))
-            return render_template("kirjaudu.html", form=form)
+        flash("Väärä käyttäjänimi tai salasana.")
+        return render_template("kirjaudu.html", form=form)
     return render_template("kirjaudu.html", form=form)
 
 @app.route("/rekisteroidy", methods=["GET", "POST"])
 def rekisteroidy():
     form = rekisteroidy_f()
     if current_user.is_authenticated:
+        flash("Olet jo kirjautunut.")
         return redirect(url_for("kirjauduttu"))
     if form.validate_on_submit():
         user = Kayttajat.query.filter_by(nimi=form.kayttaja_nimi.data).first()
         if user:
+            flash("Käyttäjä on jo olemassa.")
             return redirect(url_for("kirjaudu"))
         hash = generate_password_hash(form.salasana.data, method="sha256")
         uusi_kayttaja = Kayttajat(nimi=form.kayttaja_nimi.data, sahkoposti=form.sahkoposti.data, salasana=hash, isadmin=False)
         db.session.add(uusi_kayttaja)
         db.session.commit()
+        flash("Käyttäjä luotiin onnistuneesti.")
         return redirect(url_for("kirjaudu"))
     return render_template("rekisteroidy.html", form=form)
 
@@ -98,7 +105,7 @@ def kirjauduttu():
 @app.route("/kalenteri")
 @login_required
 def kalenteri():
-    sql = "SELECT T.nimi, T.kuvaus, T.tekstiaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id ORDER BY oikeaaika DESC"
+    sql = "SELECT T.nimi, T.kuvaus, T.tekstiaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id ORDER BY oikeaaika"
     result = db.session.execute(sql)
     tapahtumat = result.fetchall()
     return render_template("kirjauduttu.html", tapahtumat=tapahtumat, isadmin=current_user.isadmin)
@@ -119,16 +126,19 @@ def uusi_tapahtuma():
             sql = "INSERT INTO Tapahtumat (nimi, kuvaus, tekstiaika, oikeaaika, omistaja_id) VALUES (:nimi, :kuvaus, :tekstiaika, :oikeaaika, :omistaja_id)"
             db.session.execute(sql, {"nimi":form.nimi.data, "kuvaus":form.kuvaus.data, "tekstiaika":form.aika.data, "oikeaaika":form.aika.data, "omistaja_id":current_user.id})
             db.session.commit()
+            flash("Uusi tapahtuma luotiin onnistuneesti.")
             return redirect(url_for("kalenteri"))
         return render_template("kirjauduttu.html", form=form, uusitapahtuma=True, isadmin=isadmin)
-    return "<h2>Käyttö estetty!</h2>"
+    flash("Ei käyttöoikeutta!")
+    return redirect(url_for("kirjauduttu"))
 
 @app.route("/kayttajat", methods=["GET"])
 @login_required
 def kayttajat():
     isadmin = current_user.isadmin
     if isadmin is False:
-        return "<h2>Käyttö estetty!</h2>"
+        flash("Ei käyttöoikeutta!")
+        return redirect(url_for("kirjauduttu"))
     sql = "SELECT nimi, id FROM Kayttajat"
     haku = db.session.execute(sql)
     db.session.commit()
@@ -143,15 +153,18 @@ def ilmoittaudu():
     haku = db.session.execute(sql, {"tapahtumaid":tapahtumaid})
     tulos = haku.fetchall()
     if tulos is None:
+        flash("Tapahtumaa ei ole olemassa.")
         return redirect(url_for("kalenteri"))
     sql = "SELECT I.tapahtuma_id FROM Ilmoittautumiset I WHERE I.tapahtuma_id =:tapahtumaid AND I.kayttaja_id =:kayttaja"
     haku = db.session.execute(sql, {"tapahtumaid":tapahtumaid, "kayttaja":current_user.id})
     tulos = haku.fetchall()
     if tulos:
+        flash("Olet jo ilmoittautunut tapahtumaan.")
         return redirect(url_for("kalenteri"))
     sql = "INSERT INTO Ilmoittautumiset (tapahtuma_id, kayttaja_id) VALUES (:tapahtuma_id, :kayttaja_id)"
     db.session.execute(sql, {"tapahtuma_id":tapahtumaid, "kayttaja_id":current_user.id})
     db.session.commit()
+    flash("Ilmoittauduttu.")
     return redirect(url_for("kalenteri"))
     
 @app.route("/toplista", methods=["GET"])
@@ -168,16 +181,19 @@ def porttikielto():
 
     isadmin = current_user.isadmin
     if isadmin is False:
-        return "<h2>Käyttö estetty!</h2>"
+        flash("Ei käyttöoikeutta!")
+        return redirect(url_for("kirjauduttu"))
     kayttajaid = request.form["porttikieltoid"]
     sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
     haku = db.session.execute(sql, {"kayttaja":kayttajaid})
     tulos = haku.fetchall()
     if tulos:
+        flash("Käyttäjällä on jo porttikielto.")
         return redirect(url_for("kayttajat"))
     sql = "INSERT INTO Porttikiellot (kayttaja_id) VALUES (:kayttaja_id)"
     db.session.execute(sql, {"kayttaja_id":kayttajaid})
     db.session.commit()
+    flash("Porttikielto annettu.")
     return redirect(url_for("kayttajat"))
 
 @app.route("/omaprofiili", methods=["POST", "GET"])
@@ -193,11 +209,14 @@ def oma_profiili():
             sql = "UPDATE Omattiedot set lempiolut=:olut, kuvaus=:kirjoitus WHERE kayttaja_id=:kayttaja"
             db.session.execute(sql, {"olut":form.olut.data, "kirjoitus":form.kuvaus.data,"kayttaja":current_user.id})
             db.session.commit()
+            flash("Tiedot päivitetty.")
             return redirect(url_for("oma_profiili"))
         sql = "INSERT INTO Omattiedot (kayttaja_id, lempiolut, kuvaus) VALUES (:kayttaja, :olut, :kirjoitus)"
         db.session.execute(sql, {"kayttaja":current_user.id, "olut":form.olut.data, "kirjoitus":form.kuvaus.data})
         db.session.commit()
+        flash("Tiedot asetettu.")
+        return redirect(url_for("oma_profiili"))
     sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
-    sqlhaku = db.session.execute(sql, {"kayttaja":current_user.id})
-    omattiedot = sqlhaku.fetchall()
-    return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omattiedot=omattiedot, lomake=True, nimi=current_user.nimi)
+    sql_haku = db.session.execute(sql, {"kayttaja":current_user.id})
+    omat_tiedot = sql_haku.fetchall()
+    return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omat_tiedot=omat_tiedot, lomake=True, nimi=current_user.nimi)

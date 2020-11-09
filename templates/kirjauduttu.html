@@ -9,7 +9,6 @@
         padding: 30px;
       }
   </style>
-
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
 <title>Epsilan ry</title>
@@ -41,6 +40,16 @@
     </div>
     <a href="/kirjauduulos"><button type="submit" class="btn btn-primary">Kirjaudu ulos</button></a>
   </nav>
+
+  {% with viestit = get_flashed_messages() %}
+    {% if viestit %}
+        {% for viesti in viestit %}
+            <div class="alert alert-primary" role="alert">
+                <b>{{ viesti }}</b>
+            </div>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
   {% for tapahtuma in tapahtumat %}
   <div class="reunat"> 
@@ -104,13 +113,13 @@
     {{nimi}}
     <div>
 
-  {% if omattiedot %}
+  {% if omat_tiedot %}
     <div>
         <b>Lempiolut:   </b>
-        {{omattiedot[0][1]}}
+        {{omat_tiedot[0][1]}}
         <div>
             <b>Kuvaus:   </b>
-            {{omattiedot[0][0]}}
+            {{omat_tiedot[0][0]}}
             </div>
     </div>
 
