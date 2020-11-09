@@ -170,7 +170,7 @@ def ilmoittaudu():
 @app.route("/toplista", methods=["GET"])
 @login_required
 def top_lista():
-    sql = "SELECT K.nimi, COUNT(K.id) FROM Kayttajat K, Ilmoittautumiset I WHERE K.id = I.kayttaja_id GROUP BY K.id ORDER BY COUNT(K.id) DESC"
+    sql = "SELECT K.nimi, COUNT(K.id), K.id FROM Kayttajat K, Ilmoittautumiset I WHERE K.id = I.kayttaja_id GROUP BY K.id ORDER BY COUNT(K.id) DESC"
     haku = db.session.execute(sql)
     tulokset = haku.fetchall()
     return render_template("kirjauduttu.html", tulokset=tulokset, isadmin=current_user.isadmin)
@@ -220,3 +220,21 @@ def oma_profiili():
     sql_haku = db.session.execute(sql, {"kayttaja":current_user.id})
     omat_tiedot = sql_haku.fetchall()
     return render_template(("kirjauduttu.html"), form=form, isadmin=current_user.isadmin, omat_tiedot=omat_tiedot, lomake=True, nimi=current_user.nimi)
+
+@app.route("/kayttajanprofiili", methods=["POST"])
+@login_required
+def kayttajan_profiili():
+    kayttaja_id = request.form["kayttajaid"]
+    sql = "SELECT K.nimi, O.lempiolut, O.kuvaus FROM Omattiedot O, Kayttajat K WHERE O.kayttaja_id=K.id AND K.id=:kayttajaid"
+    haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
+    kayttajan_haku = haku.fetchall()
+    if not kayttajan_haku:
+        flash("Käyttäjällä ei ole tietoja.")
+        redirect(url_for("kirjauduttu"))
+    sql = "SELECT T.nimi, T.tekstiaika FROM Tapahtumat T, Ilmoittautumiset I, Kayttajat K WHERE T.id=I.tapahtuma_id AND I.kayttaja_id=K.id AND K.id=:kayttajaid"
+    haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
+    ilmoittautumiset_kayttaja = haku.fetchall()
+    sql = "SELECT COUNT(T.id) FROM Tapahtumat T, Kayttajat K WHERE T.omistaja_id = K.id AND K.id=:kayttajaid"
+    haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
+    jarjestetyt_tapahtumat = haku.fetchall()
+    return render_template("kirjauduttu.html", isadmin=current_user.isadmin, kayttajan_haku=kayttajan_haku, ilmoittautumiset_kayttaja=ilmoittautumiset_kayttaja, jarjestetyt_tapahtumat=jarjestetyt_tapahtumat)

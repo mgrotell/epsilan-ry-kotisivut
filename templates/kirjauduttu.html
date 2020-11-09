@@ -68,10 +68,16 @@
   {% endfor %}
 
   {% for tulos in tulokset %}
-  <div class="reunat"> 
-      <h2>
-        {{ tulos[0]}}
-      </h2>
+  <div class="reunat">
+    
+    <h2>
+      <form method="POST" action="/kayttajanprofiili">
+      {{ tulos[0] }}
+      <input type="hidden" name="kayttajaid" value="{{tulos[2]}}">
+      <button type="submit" class="btn btn-primary">Profiili</button>
+      </form>
+    </h2>
+
       <div>
         Ilmoittautumisia:
         <b>{{ tulos[1]}}</b> 
@@ -134,4 +140,39 @@
   </form>
   {% endif %}
 
+  {% if kayttajan_haku %}
+  <div class="reunat">
+      <h2>
+          {{ kayttajan_haku[0][0] }}
+      </h2>
+      <div>
+      <b>
+      Lempiolut:
+      </b>
+      {{ kayttajan_haku[0][1] }}
+      </div>
+      <div>
+      <b>
+        Kuvaus:
+        </b>
+        {{ kayttajan_haku[0][2] }}
+        </div>
+        <div><b>Järjestetyt tapahtumat: </b>
+        {{jarjestetyt_tapahtumat[0][0]}}
+        </div>
+  </div>
+  <div class="reunat">
+    <h2>Käyttäjä on ilmoittautunut tapahtumiin.</h2>
+  <div>
+  {% for tapahtuma in ilmoittautumiset_kayttaja %}
+      <div>
+        <b>
+        {{tapahtuma[0] + "    "}}
+        </b>
+        {{tapahtuma[1]}}
+      </div>
+  {% endfor %}
+  </div>
+  </div>
+  {%endif%}
   <img class="reunat" src="{{url_for("static", filename="timos.jpg")}}"/>
