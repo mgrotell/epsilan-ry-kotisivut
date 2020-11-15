@@ -48,7 +48,7 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Tapahtumakalenterin parantaminen.
 - Chatti jossa voi keskustella.
 
-### Tunnukset sivun kokeiluun
+### Tunnukset sivun ominaisuuksien kokeiluun
 
 #### Moderaattori
 - Käyttäjänimi: moderaattori
