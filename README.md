@@ -27,7 +27,6 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 
 #### Jatkokehitysideoita
 
-- Kotisivulle chatti mihin jokainen käyttäjä voi laittaa kysymyksiä ja ideoita.
 - Kotisivulle tulee verkkokauppa johon tulee fanituotteita.
 
 ### Toteutettuja ominaisuuksia
@@ -47,6 +46,7 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Jos käyttäjälle annetaan porttikielto niin tehdään tarkistus onko hän kirjautunut sisään ja jos on niin hänet kirjataan ulos.
 - Tapahtumakalenterin parantaminen.
 - Chatti jossa voi keskustella.
+- Lisätään tarkistus, että salasanassa pitää olla erikoismerkkejä.
 
 ### Tunnukset sivun ominaisuuksien kokeiluun
 
