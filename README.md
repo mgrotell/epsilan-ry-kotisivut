@@ -56,3 +56,7 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
   # Normaali käyttäjä
   - Käyttäjänimi: käyttäjä
   - Salasana: testi123
+  
+## Sivun osoite
+
+- https://epsilan-ry.herokuapp.com
