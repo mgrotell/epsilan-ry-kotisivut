@@ -48,14 +48,15 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Tapahtumakalenterin parantaminen.
 - Chatti jossa voi keskustella.
 
-## Tunnukset sivun kokeiluun
-  # Moderaattori
-  - Käyttäjänimi: moderaattori
-  - Salasana: testi123
+### Tunnukset sivun kokeiluun
+
+#### Moderaattori
+- Käyttäjänimi: moderaattori
+- Salasana: testi123
   
-  # Normaali käyttäjä
-  - Käyttäjänimi: käyttäjä
-  - Salasana: testi123
+#### Normaali käyttäjä
+- Käyttäjänimi: käyttäjä
+- Salasana: testi123
   
 ## Sivun osoite
 
