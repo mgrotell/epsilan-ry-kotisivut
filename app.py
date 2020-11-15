@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
-from wtforms import StringField, PasswordField, BooleanField, TextAreaField, DateField
+from wtforms import StringField, PasswordField, TextAreaField, DateField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -37,7 +37,7 @@ class kirjaudu_f(FlaskForm):
 
 class rekisteroidy_f(FlaskForm):
     kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
-    sahkoposti = StringField("Sähkoposti", validators=[InputRequired(), Length(max=40)])
+    sahkoposti = StringField("Sähkoposti", validators=[InputRequired(), Email(message=None, granular_message=False, check_deliverability=True, allow_smtputf8=True, allow_empty_local=False), Length(max=50)])
     salasana = PasswordField("Salasana", validators=[InputRequired(), Length(min=8, max=50)])
 
 class uusi_tapahtuma_f(FlaskForm):
@@ -184,6 +184,9 @@ def porttikielto():
         flash("Ei käyttöoikeutta!")
         return redirect(url_for("kirjauduttu"))
     kayttajaid = request.form["porttikieltoid"]
+    if int(kayttajaid) == current_user.id:
+        flash("Et voi antaa itselle porttikieltoa.")
+        return redirect(url_for("kayttajat"))
     sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
     haku = db.session.execute(sql, {"kayttaja":kayttajaid})
     tulos = haku.fetchall()
