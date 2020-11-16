@@ -105,7 +105,7 @@ def kirjauduttu():
 @app.route("/kalenteri")
 @login_required
 def kalenteri():
-    sql = "SELECT T.nimi, T.kuvaus, T.tekstiaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id ORDER BY oikeaaika"
+    sql = "SELECT T.nimi, T.tekstiaika, T.id FROM Tapahtumat T ORDER BY oikeaaika"
     result = db.session.execute(sql)
     tapahtumat = result.fetchall()
     return render_template("kirjauduttu.html", tapahtumat=tapahtumat, isadmin=current_user.isadmin)
@@ -148,21 +148,21 @@ def kayttajat():
 @app.route("/ilmoittaudu", methods=["POST"])
 @login_required
 def ilmoittaudu():
-    tapahtumaid = request.form["tapahtumaid"]
+    tapahtuma_id = request.form["tapahtumaid"]
     sql = "SELECT T.id FROM Tapahtumat T WHERE T.id =:tapahtumaid"
-    haku = db.session.execute(sql, {"tapahtumaid":tapahtumaid})
+    haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id})
     tulos = haku.fetchall()
-    if tulos is None:
+    if not tulos:
         flash("Tapahtumaa ei ole olemassa.")
         return redirect(url_for("kalenteri"))
     sql = "SELECT I.tapahtuma_id FROM Ilmoittautumiset I WHERE I.tapahtuma_id =:tapahtumaid AND I.kayttaja_id =:kayttaja"
-    haku = db.session.execute(sql, {"tapahtumaid":tapahtumaid, "kayttaja":current_user.id})
+    haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id, "kayttaja":current_user.id})
     tulos = haku.fetchall()
     if tulos:
         flash("Olet jo ilmoittautunut tapahtumaan.")
         return redirect(url_for("kalenteri"))
     sql = "INSERT INTO Ilmoittautumiset (tapahtuma_id, kayttaja_id) VALUES (:tapahtuma_id, :kayttaja_id)"
-    db.session.execute(sql, {"tapahtuma_id":tapahtumaid, "kayttaja_id":current_user.id})
+    db.session.execute(sql, {"tapahtuma_id":tapahtuma_id, "kayttaja_id":current_user.id})
     db.session.commit()
     flash("Ilmoittauduttu.")
     return redirect(url_for("kalenteri"))
@@ -241,3 +241,18 @@ def kayttajan_profiili():
     haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
     jarjestetyt_tapahtumat = haku.fetchall()
     return render_template("kirjauduttu.html", isadmin=current_user.isadmin, kayttajan_haku=kayttajan_haku, ilmoittautumiset_kayttaja=ilmoittautumiset_kayttaja, jarjestetyt_tapahtumat=jarjestetyt_tapahtumat)
+
+@app.route("/tapahtumantiedot", methods=["POST"])
+@login_required
+def tapahtuman_tiedot():
+    tapahtuma_id = request.form["tapahtumaid"]
+    sql = "SELECT T.nimi, T.kuvaus, T.tekstiaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id AND T.id =:tapahtuma_id ORDER BY oikeaaika"
+    tapahtuma_haku = db.session.execute(sql, {"tapahtuma_id":tapahtuma_id})
+    tapahtuma_tiedot = tapahtuma_haku.fetchone()
+    if tapahtuma_tiedot is None:
+        flash("Tapahtumaa ei ole olemassa.")
+        return redirect(url_for("kirjauduttu"))
+    sql = "SELECT K.nimi FROM Tapahtumat T, Kayttajat K, Ilmoittautumiset I WHERE T.id =:tapahtuma_id AND T.id = I.tapahtuma_id AND I.kayttaja_id = K.id"
+    kayttaja_haku = db.session.execute(sql, {"tapahtuma_id":tapahtuma_id})
+    ilmoittautuneet = kayttaja_haku.fetchall()
+    return render_template("kirjauduttu.html", tapahtuma_tiedot=tapahtuma_tiedot, ilmoittautuneet=ilmoittautuneet, isadmin=current_user.isadmin)
