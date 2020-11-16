@@ -40,11 +40,11 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Käyttäjät voivat ilmoittautua vain kerran samaan tapahtumaan. 
 - Lomakkeiden sisältöjen tarkistus.
 - Virheellisten pyyntöjen indikointi.
+- Jokaisella tapahtumalla on nyt oma infosivu missä näkyy tapahtuman tiedot sekä ilmoittautuneet käyttäjät.
 
 ### Seuraavat toteutukset
 
 - Jos käyttäjälle annetaan porttikielto niin tehdään tarkistus onko hän kirjautunut sisään ja jos on niin hänet kirjataan ulos.
-- Tapahtumakalenterin parantaminen.
 - Chatti jossa voi keskustella.
 - Lisätään tarkistus, että salasanassa pitää olla erikoismerkkejä.
 
