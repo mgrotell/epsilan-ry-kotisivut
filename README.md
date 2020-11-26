@@ -8,6 +8,7 @@ yhdistyksestä ja sinne pystyy lisätä tapahtumia. Käyttäjät voivat ilmoitta
 Jokaisella käyttäjällä on oma profiili. Profiilissa näkyy tapahtumat mihin käyttäjä on ilmoittautunut.
 Profiiliin voi lisätä tietoja itsestään. Profiilissa näkyy myös määrä moneen tapahtumaan on ilmoittautunut.
 Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteitä saa tapahtumista joihin on ilmoittautunut.
+Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustelusivua. Keskustelusivulla uusimmat 3 viestiä ovat näkyvissä.
 
 
 ### Käyttäjät
