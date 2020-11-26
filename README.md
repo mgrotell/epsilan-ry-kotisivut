@@ -18,6 +18,7 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Voi tarkastella sivua.
 - Voi laittaa tietoja omaan profiiliin.
 - Voi tarkastella toisten profiileja top listan kautta.
+- Voi lähettää viestejä keskustelualueelle.
 
 #### Moderaattori
 
