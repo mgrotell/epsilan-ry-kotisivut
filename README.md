@@ -41,11 +41,11 @@ Kotisivulla näkyy myös top lista siitä kenellä on eniten pisteitä. Pisteit�
 - Lomakkeiden sisältöjen tarkistus.
 - Virheellisten pyyntöjen indikointi.
 - Jokaisella tapahtumalla on nyt oma infosivu missä näkyy tapahtuman tiedot sekä ilmoittautuneet käyttäjät.
+- Keskustelualue jossa käyttäjät voivat keskustella. Keskustelualueella näkyy 3 uusinta viestiä.
 
 ### Seuraavat toteutukset
 
 - Jos käyttäjälle annetaan porttikielto niin tehdään tarkistus onko hän kirjautunut sisään ja jos on niin hänet kirjataan ulos.
-- Chatti jossa voi keskustella.
 - Lisätään tarkistus, että salasanassa pitää olla erikoismerkkejä.
 
 ### Tunnukset sivun ominaisuuksien kokeiluun
