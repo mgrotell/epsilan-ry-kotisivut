@@ -39,7 +39,7 @@ class kirjaudu_f(FlaskForm):
 
 class rekisteroidy_f(FlaskForm):
     kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
-    sahkoposti = StringField("Sähkoposti", validators=[InputRequired(), Email(message=None, granular_message=False, check_deliverability=True, allow_smtputf8=True, allow_empty_local=False), Length(max=50)])
+    sahkoposti = StringField("Sähkoposti", validators=[InputRequired(), Email(message="Virheellinen sähköposti.", granular_message=False, check_deliverability=True, allow_smtputf8=True, allow_empty_local=False), Length(max=50)])
     salasana = PasswordField("Salasana", validators=[InputRequired(), Length(min=8, max=50)])
 
 class uusi_tapahtuma_f(FlaskForm):
@@ -98,9 +98,13 @@ def rekisteroidy():
         return redirect(url_for("kirjauduttu"))
     if form.validate_on_submit():
         user = Kayttajat.query.filter_by(nimi=form.kayttaja_nimi.data).first()
+        sahkoposti = Kayttajat.query.filter_by(sahkoposti=form.sahkoposti.data).first()
         if user:
             flash("Käyttäjä on jo olemassa.")
             return redirect(url_for("kirjaudu"))
+        if sahkoposti:
+            flash("Kyseinen sähköposti on jo käytössä.")
+            return render_template("rekisteroidy.html", form=form)
         hash = generate_password_hash(form.salasana.data, method="sha256")
         uusi_kayttaja = Kayttajat(nimi=form.kayttaja_nimi.data, sahkoposti=form.sahkoposti.data, salasana=hash, isadmin=False, isbanned=False)
         db.session.add(uusi_kayttaja)
