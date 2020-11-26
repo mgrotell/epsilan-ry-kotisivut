@@ -28,6 +28,9 @@
         <li class="nav-item">
             <a class="nav-link" href="/toplista">Top-lista</a>
           </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/keskustelu">Keskustelu</a>
+        </li>
           {% if isadmin %}
         <li class="nav-item">
             <a class="nav-link" href="/uusitapahtuma">Uusi tapahtuma</a>
@@ -195,5 +198,26 @@
     </div>
     {%endfor%}
   </div>
+  {%endif%}
+
+  {%if keskustelu%}
+  {% for viesti in viestit|reverse %}
+      <div class="reunat">
+        <b>
+        {{viesti[0]}}
+        </b>
+      <div>
+       {{viesti[1]}}
+      </div>
+      {{viesti[2]}}
+    </div>
+  {% endfor %}
+  <form method="POST" action="/keskustelu">
+    <div class="reunat">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.viesti) }}
+    <button type="submit" class="btn btn-primary">Lähetä viesti</button>
+    </div>
+  </form>
   {%endif%}
   <img class="reunat" src="{{url_for("static", filename="timos.jpg")}}"/>

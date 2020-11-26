@@ -7,6 +7,7 @@ from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from os import getenv
+from datetime import datetime
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
@@ -48,6 +49,9 @@ class uusi_tapahtuma_f(FlaskForm):
 class omat_tiedot_lomake_f(FlaskForm):
     kuvaus = StringField("Kuvaus", validators=[InputRequired(), Length(min=5, max=400)])
     olut = StringField("Lempi olut", validators=[InputRequired(), Length(min=3, max=40)])
+
+class keskustelu_f(FlaskForm):
+    viesti = StringField("Viesti", validators=[InputRequired(), Length(min=2, max=150)])
 
 @app.route("/")
 def index():
@@ -256,3 +260,20 @@ def tapahtuman_tiedot():
     kayttaja_haku = db.session.execute(sql, {"tapahtuma_id":tapahtuma_id})
     ilmoittautuneet = kayttaja_haku.fetchall()
     return render_template("kirjauduttu.html", tapahtuma_tiedot=tapahtuma_tiedot, ilmoittautuneet=ilmoittautuneet, isadmin=current_user.isadmin)
+
+
+@app.route("/keskustelu", methods=["POST", "GET"])
+@login_required
+def keskustelu():
+    form = keskustelu_f()
+    if form.validate_on_submit():
+        sql = "INSERT INTO Keskustelu (kayttaja_id, kayttaja_nimi, viesti, klo) VALUES (:kayttaja, :nimi, :viesti, :aika)"
+        klo = datetime.now()
+        klo_aika = klo.strftime("%H:%M:%S")
+        db.session.execute(sql, {"kayttaja":current_user.id, "nimi":current_user.nimi, "viesti":form.viesti.data, "aika":klo_aika})
+        db.session.commit()
+        return redirect(url_for("keskustelu"))
+    sql = "SELECT kayttaja_nimi, viesti, klo FROM Keskustelu ORDER BY klo DESC LIMIT 3"
+    viesti_haku = db.session.execute(sql)
+    viestit = viesti_haku.fetchall()
+    return render_template("kirjauduttu.html", form=form, keskustelu=True, viestit=viestit, isadmin=current_user.isadmin)
