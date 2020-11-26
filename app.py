@@ -31,6 +31,7 @@ class Kayttajat(UserMixin, db.Model):
     sahkoposti = db.Column(db.String(50), unique=True)
     salasana = db.Column(db.String(80))
     isadmin = db.Column(db.Boolean)
+    isbanned = db.Column(db.Boolean)
 
 class kirjaudu_f(FlaskForm):
     kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
@@ -69,10 +70,10 @@ def kirjaudu():
     if form.validate_on_submit():
         user = Kayttajat.query.filter_by(nimi=form.kayttaja_nimi.data).first()
         if user:
-            sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
+            sql = "SELECT isbanned FROM Kayttajat WHERE id =:kayttaja"
             porttikielto_haku = db.session.execute(sql, {"kayttaja":user.id})
-            onko_porttikielto = porttikielto_haku.fetchall()
-            if onko_porttikielto:
+            onko_porttikielto = porttikielto_haku.fetchone()
+            if onko_porttikielto[0]:
                 flash("Sinulla on porttikielto.")
                 return render_template("kirjaudu.html", form=form)
             if check_password_hash(user.salasana, form.salasana.data):
@@ -94,7 +95,7 @@ def rekisteroidy():
             flash("Käyttäjä on jo olemassa.")
             return redirect(url_for("kirjaudu"))
         hash = generate_password_hash(form.salasana.data, method="sha256")
-        uusi_kayttaja = Kayttajat(nimi=form.kayttaja_nimi.data, sahkoposti=form.sahkoposti.data, salasana=hash, isadmin=False)
+        uusi_kayttaja = Kayttajat(nimi=form.kayttaja_nimi.data, sahkoposti=form.sahkoposti.data, salasana=hash, isadmin=False, isbanned=False)
         db.session.add(uusi_kayttaja)
         db.session.commit()
         flash("Käyttäjä luotiin onnistuneesti.")
@@ -106,6 +107,12 @@ def rekisteroidy():
 def kirjauduttu():
     return render_template("kirjauduttu.html", isadmin=current_user.isadmin)
 
+@app.route("/kirjauduulos")
+@login_required
+def kirjaudu_ulos():
+    logout_user()
+    return redirect(url_for("index"))
+
 @app.route("/kalenteri")
 @login_required
 def kalenteri():
@@ -113,12 +120,6 @@ def kalenteri():
     result = db.session.execute(sql)
     tapahtumat = result.fetchall()
     return render_template("kirjauduttu.html", tapahtumat=tapahtumat, isadmin=current_user.isadmin)
-
-@app.route("/kirjauduulos")
-@login_required
-def kirjaudu_ulos():
-    logout_user()
-    return redirect(url_for("index"))
 
 @app.route("/uusitapahtuma", methods=["GET", "POST"])
 @login_required
@@ -143,7 +144,7 @@ def kayttajat():
     if isadmin is False:
         flash("Ei käyttöoikeutta!")
         return redirect(url_for("kirjauduttu"))
-    sql = "SELECT nimi, id FROM Kayttajat"
+    sql = "SELECT nimi, id FROM Kayttajat GROUP BY id"
     haku = db.session.execute(sql)
     db.session.commit()
     nimet = haku.fetchall()
@@ -182,7 +183,6 @@ def top_lista():
 @app.route("/porttikielto", methods=["POST"])
 @login_required
 def porttikielto():
-
     isadmin = current_user.isadmin
     if isadmin is False:
         flash("Ei käyttöoikeutta!")
@@ -191,13 +191,13 @@ def porttikielto():
     if int(kayttajaid) == current_user.id:
         flash("Et voi antaa itselle porttikieltoa.")
         return redirect(url_for("kayttajat"))
-    sql = "SELECT kayttaja_id FROM Porttikiellot WHERE kayttaja_id =:kayttaja"
-    haku = db.session.execute(sql, {"kayttaja":kayttajaid})
-    tulos = haku.fetchall()
-    if tulos:
+    sql = "SELECT isbanned FROM Kayttajat WHERE id =:kayttaja"
+    porttikielto_haku = db.session.execute(sql, {"kayttaja":kayttajaid})
+    onko_porttikielto = porttikielto_haku.fetchone()
+    if onko_porttikielto[0]:
         flash("Käyttäjällä on jo porttikielto.")
         return redirect(url_for("kayttajat"))
-    sql = "INSERT INTO Porttikiellot (kayttaja_id) VALUES (:kayttaja_id)"
+    sql = "UPDATE Kayttajat set isbanned=True WHERE id=:kayttaja_id"
     db.session.execute(sql, {"kayttaja_id":kayttajaid})
     db.session.commit()
     flash("Porttikielto annettu.")
@@ -206,7 +206,6 @@ def porttikielto():
 @app.route("/omaprofiili", methods=["POST", "GET"])
 @login_required
 def oma_profiili():
-
     form = omat_tiedot_lomake_f()
     if form.validate_on_submit():
         sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
@@ -260,7 +259,6 @@ def tapahtuman_tiedot():
     kayttaja_haku = db.session.execute(sql, {"tapahtuma_id":tapahtuma_id})
     ilmoittautuneet = kayttaja_haku.fetchall()
     return render_template("kirjauduttu.html", tapahtuma_tiedot=tapahtuma_tiedot, ilmoittautuneet=ilmoittautuneet, isadmin=current_user.isadmin)
-
 
 @app.route("/keskustelu", methods=["POST", "GET"])
 @login_required
