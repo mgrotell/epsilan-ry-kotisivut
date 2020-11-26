@@ -278,7 +278,7 @@ def keskustelu():
         db.session.execute(sql, {"kayttaja":current_user.id, "nimi":current_user.nimi, "viesti":form.viesti.data, "aika":klo_aika})
         db.session.commit()
         return redirect(url_for("keskustelu"))
-    sql = "SELECT kayttaja_nimi, viesti, klo FROM Keskustelu ORDER BY klo DESC LIMIT 3"
+    sql = "SELECT kayttaja_nimi, viesti, klo FROM Keskustelu ORDER BY id DESC LIMIT 3"
     viesti_haku = db.session.execute(sql)
     viestit = viesti_haku.fetchall()
     return render_template("kirjauduttu.html", form=form, keskustelu=True, viestit=viestit, isadmin=current_user.isadmin)
