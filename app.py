@@ -54,6 +54,13 @@ class omat_tiedot_lomake_f(FlaskForm):
 class keskustelu_f(FlaskForm):
     viesti = StringField("Viesti", validators=[InputRequired(), Length(min=2, max=150)])
 
+@app.errorhandler(404)
+def olematon_sivu(e):
+    flash("Sivua ei löydy.")
+    if current_user.is_authenticated:
+        return redirect(url_for("kirjauduttu"))
+    return redirect(url_for("kirjaudu"))
+
 @app.route("/")
 def index():
     if current_user.is_authenticated:
