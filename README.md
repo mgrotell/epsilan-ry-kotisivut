@@ -38,7 +38,7 @@ Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustel
 - Top listan kautta pääsee tarkastelemaan kaikkien profiileja.
 - Käyttäjä voi lisätä omia tietoja oman profiilin kautta (lempi olut ja kuvaus).
 - Moderaattori voi antaa porttikieltoja käyttäjille.
-- Tapahtumakalenteri jota voi tarkastella kaikki käyttäjät. Myöhemmin tulee vielä ominaisuus, että tapahtumien tarkemmat tiedot voisi avata tätä kautta.
+- Tapahtumakalenteri.
 - Käyttäjät voivat ilmoittautua vain kerran samaan tapahtumaan. 
 - Lomakkeiden sisältöjen tarkistus.
 - Virheellisten pyyntöjen indikointi.
