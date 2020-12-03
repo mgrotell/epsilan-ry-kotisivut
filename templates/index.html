@@ -25,5 +25,14 @@
       </ul>
     </div>
   </nav>
+  {% with viestit = get_flashed_messages() %}
+    {% if viestit %}
+        {% for viesti in viestit %}
+            <div class="alert alert-primary" role="alert">
+                <b>{{ viesti }}</b>
+            </div>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
   <img class="kuva" src="{{url_for("static", filename="timos.jpg")}}"/>

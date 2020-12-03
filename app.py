@@ -1,13 +1,11 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap
-from flask_wtf import FlaskForm 
-from wtforms import StringField, PasswordField, TextAreaField, DateField
-from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from os import getenv
 from datetime import datetime
+from lomakkeet import rekisteroidy_f, kirjaudu_f, omat_tiedot_lomake_f, keskustelu_f, uusi_tapahtuma_f
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
@@ -33,26 +31,9 @@ class Kayttajat(UserMixin, db.Model):
     isadmin = db.Column(db.Boolean)
     isbanned = db.Column(db.Boolean)
 
-class kirjaudu_f(FlaskForm):
-    kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
-    salasana = PasswordField("Salasana", validators=[InputRequired(), Length(min=8, max=50)])
-
-class rekisteroidy_f(FlaskForm):
-    kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
-    sahkoposti = StringField("Sähkoposti", validators=[InputRequired(), Email(message="Virheellinen sähköposti.", granular_message=False, check_deliverability=True, allow_smtputf8=True, allow_empty_local=False), Length(max=50)])
-    salasana = PasswordField("Salasana", validators=[InputRequired(), Length(min=8, max=50)])
-
-class uusi_tapahtuma_f(FlaskForm):
-    nimi = StringField("Tapahtuman nimi", validators=[InputRequired(), Length(min=4, max=100)])
-    kuvaus = TextAreaField("Tapahtuman kuvaus", validators=[InputRequired(), Length(min=10, max=1000)])
-    aika = DateField("Päivä muotoa   (2000-12-24)", validators=[InputRequired()])
-
-class omat_tiedot_lomake_f(FlaskForm):
-    kuvaus = StringField("Kuvaus", validators=[InputRequired(), Length(min=5, max=400)])
-    olut = StringField("Lempi olut", validators=[InputRequired(), Length(min=3, max=40)])
-
-class keskustelu_f(FlaskForm):
-    viesti = StringField("Viesti", validators=[InputRequired(), Length(min=2, max=150)])
+def porttikieltoinfo():
+    flash("Sait porttikiellon!")
+    return redirect(url_for("kirjaudu_ulos"))
 
 @app.errorhandler(404)
 def olematon_sivu(e):
@@ -116,6 +97,8 @@ def rekisteroidy():
 @app.route("/kirjauduttu")
 @login_required
 def kirjauduttu():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     return render_template("kirjauduttu.html", isadmin=current_user.isadmin)
 
 @app.route("/kirjauduulos")
@@ -127,7 +110,9 @@ def kirjaudu_ulos():
 @app.route("/kalenteri")
 @login_required
 def kalenteri():
-    sql = "SELECT T.nimi, T.tekstiaika, T.id FROM Tapahtumat T ORDER BY oikeaaika"
+    if current_user.isbanned:
+        return porttikieltoinfo()
+    sql = "SELECT nimi, oikeaaika, id FROM Tapahtumat ORDER BY oikeaaika DESC"
     result = db.session.execute(sql)
     tapahtumat = result.fetchall()
     return render_template("kirjauduttu.html", tapahtumat=tapahtumat, isadmin=current_user.isadmin)
@@ -135,12 +120,14 @@ def kalenteri():
 @app.route("/uusitapahtuma", methods=["GET", "POST"])
 @login_required
 def uusi_tapahtuma():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     form = uusi_tapahtuma_f()
     isadmin = current_user.isadmin
     if isadmin:
         if form.validate_on_submit():
-            sql = "INSERT INTO Tapahtumat (nimi, kuvaus, tekstiaika, oikeaaika, omistaja_id) VALUES (:nimi, :kuvaus, :tekstiaika, :oikeaaika, :omistaja_id)"
-            db.session.execute(sql, {"nimi":form.nimi.data, "kuvaus":form.kuvaus.data, "tekstiaika":form.aika.data, "oikeaaika":form.aika.data, "omistaja_id":current_user.id})
+            sql = "INSERT INTO Tapahtumat (nimi, kuvaus, oikeaaika, omistaja_id) VALUES (:nimi, :kuvaus, :oikeaaika, :omistaja_id)"
+            db.session.execute(sql, {"nimi":form.nimi.data, "kuvaus":form.kuvaus.data, "oikeaaika":form.aika.data, "omistaja_id":current_user.id})
             db.session.commit()
             flash("Uusi tapahtuma luotiin onnistuneesti.")
             return redirect(url_for("kalenteri"))
@@ -151,6 +138,8 @@ def uusi_tapahtuma():
 @app.route("/kayttajat", methods=["GET"])
 @login_required
 def kayttajat():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     isadmin = current_user.isadmin
     if isadmin is False:
         flash("Ei käyttöoikeutta!")
@@ -164,6 +153,8 @@ def kayttajat():
 @app.route("/ilmoittaudu", methods=["POST"])
 @login_required
 def ilmoittaudu():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     tapahtuma_id = request.form["tapahtumaid"]
     sql = "SELECT T.id FROM Tapahtumat T WHERE T.id =:tapahtumaid"
     haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id})
@@ -171,7 +162,7 @@ def ilmoittaudu():
     if not tulos:
         flash("Tapahtumaa ei ole olemassa.")
         return redirect(url_for("kalenteri"))
-    sql = "SELECT I.tapahtuma_id FROM Ilmoittautumiset I WHERE I.tapahtuma_id =:tapahtumaid AND I.kayttaja_id =:kayttaja"
+    sql = "SELECT tapahtuma_id FROM Ilmoittautumiset WHERE tapahtuma_id =:tapahtumaid AND kayttaja_id =:kayttaja"
     haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id, "kayttaja":current_user.id})
     tulos = haku.fetchall()
     if tulos:
@@ -186,6 +177,8 @@ def ilmoittaudu():
 @app.route("/toplista", methods=["GET"])
 @login_required
 def top_lista():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     sql = "SELECT K.nimi, COUNT(K.id), K.id FROM Kayttajat K, Ilmoittautumiset I WHERE K.id = I.kayttaja_id GROUP BY K.id ORDER BY COUNT(K.id) DESC"
     haku = db.session.execute(sql)
     tulokset = haku.fetchall()
@@ -194,6 +187,8 @@ def top_lista():
 @app.route("/porttikielto", methods=["POST"])
 @login_required
 def porttikielto():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     isadmin = current_user.isadmin
     if isadmin is False:
         flash("Ei käyttöoikeutta!")
@@ -217,6 +212,8 @@ def porttikielto():
 @app.route("/omaprofiili", methods=["POST", "GET"])
 @login_required
 def oma_profiili():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     form = omat_tiedot_lomake_f()
     if form.validate_on_submit():
         sql = "SELECT kuvaus, lempiolut FROM Omattiedot WHERE kayttaja_id =:kayttaja"
@@ -241,14 +238,16 @@ def oma_profiili():
 @app.route("/kayttajanprofiili", methods=["POST"])
 @login_required
 def kayttajan_profiili():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     kayttaja_id = request.form["kayttajaid"]
     sql = "SELECT K.nimi, O.lempiolut, O.kuvaus FROM Omattiedot O, Kayttajat K WHERE O.kayttaja_id=K.id AND K.id=:kayttajaid"
     haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
     kayttajan_haku = haku.fetchall()
     if not kayttajan_haku:
         flash("Käyttäjällä ei ole tietoja.")
-        redirect(url_for("kirjauduttu"))
-    sql = "SELECT T.nimi, T.tekstiaika FROM Tapahtumat T, Ilmoittautumiset I, Kayttajat K WHERE T.id=I.tapahtuma_id AND I.kayttaja_id=K.id AND K.id=:kayttajaid"
+        return redirect(url_for("top_lista"))
+    sql = "SELECT T.nimi, T.oikeaaika FROM Tapahtumat T, Ilmoittautumiset I, Kayttajat K WHERE T.id=I.tapahtuma_id AND I.kayttaja_id=K.id AND K.id=:kayttajaid"
     haku = db.session.execute(sql, {"kayttajaid":kayttaja_id})
     ilmoittautumiset_kayttaja = haku.fetchall()
     sql = "SELECT COUNT(T.id) FROM Tapahtumat T, Kayttajat K WHERE T.omistaja_id = K.id AND K.id=:kayttajaid"
@@ -259,8 +258,10 @@ def kayttajan_profiili():
 @app.route("/tapahtumantiedot", methods=["POST"])
 @login_required
 def tapahtuman_tiedot():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     tapahtuma_id = request.form["tapahtumaid"]
-    sql = "SELECT T.nimi, T.kuvaus, T.tekstiaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id AND T.id =:tapahtuma_id ORDER BY oikeaaika"
+    sql = "SELECT T.nimi, T.kuvaus, T.oikeaaika, T.id, K.nimi FROM Tapahtumat T, Kayttajat K WHERE K.id = T.omistaja_id AND T.id =:tapahtuma_id ORDER BY T.oikeaaika"
     tapahtuma_haku = db.session.execute(sql, {"tapahtuma_id":tapahtuma_id})
     tapahtuma_tiedot = tapahtuma_haku.fetchone()
     if tapahtuma_tiedot is None:
@@ -274,6 +275,8 @@ def tapahtuman_tiedot():
 @app.route("/keskustelu", methods=["POST", "GET"])
 @login_required
 def keskustelu():
+    if current_user.isbanned:
+        return porttikieltoinfo()
     form = keskustelu_f()
     if form.validate_on_submit():
         sql = "INSERT INTO Keskustelu (kayttaja_id, kayttaja_nimi, viesti, klo) VALUES (:kayttaja, :nimi, :viesti, :aika)"
