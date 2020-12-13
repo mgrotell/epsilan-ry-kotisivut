@@ -54,7 +54,7 @@
     {% endif %}
   {% endwith %}
 
-  {% for tapahtuma in tapahtumat %}
+  {% for tapahtuma in tapahtumat|reverse %}
   <div class="reunat"> 
         <form method="POST" action="/tapahtumantiedot">
         <h2>{{tapahtuma[0]}}
