@@ -47,8 +47,7 @@ Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustel
 
 ### Seuraavat toteutukset
 
-- Jos käyttäjälle annetaan porttikielto niin tehdään tarkistus onko hän kirjautunut sisään ja jos on niin hänet kirjataan ulos.
-- Lisätään tarkistus, että salasanassa pitää olla erikoismerkkejä.
+-
 
 ### Tunnukset sivun ominaisuuksien kokeiluun
 
