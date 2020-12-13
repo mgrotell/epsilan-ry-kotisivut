@@ -44,6 +44,9 @@ Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustel
 - Virheellisten pyyntöjen indikointi.
 - Jokaisella tapahtumalla on nyt oma infosivu missä näkyy tapahtuman tiedot sekä ilmoittautuneet käyttäjät.
 - Keskustelualue jossa käyttäjät voivat keskustella. Keskustelualueella näkyy 3 uusinta viestiä.
+- Käyttäjä kirjataan ulos mikäli hän saa porttikiellon ollessaan sivustolla.
+- Menneisiin tapahtumiin ei pysty ilmoittautua.
+- Tapahtumia ei voi luoda menneisyyteen.
 
 ### Seuraavat toteutukset
 
@@ -62,3 +65,7 @@ Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustel
 ## Sivun osoite
 
 - https://epsilan-ry.herokuapp.com
+
+## Sovelluksen tila 13.12.2020
+
+Sivusto on nyt täydellisessä käyttökunnossa. Sivulta löytyy tapahtumakalenteri, oma profiili, top-lista ja keskustelualue. Moderaattoreilla on lisäksi tapahtumien luontisivu ja porttikielto sivu. Virheelliset pyynnot ja tyhjät lomakkeet indikoidaan. Sivustoa pääsee kokeilemaan yllä olevilla tunnuksilla. 
