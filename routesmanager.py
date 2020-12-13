@@ -2,7 +2,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask import render_template, redirect, url_for, request, flash
 from lomakkeet import rekisteroidy_f, kirjaudu_f, omat_tiedot_lomake_f, keskustelu_f, uusi_tapahtuma_f
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 from app import app
 from db import db
 from kayttajamodel import Kayttajat
@@ -136,11 +136,14 @@ def ilmoittaudu():
     if current_user.isbanned:
         return porttikieltoinfo()
     tapahtuma_id = request.form["tapahtumaid"]
-    sql = "SELECT T.id FROM Tapahtumat T WHERE T.id =:tapahtumaid"
+    sql = "SELECT id, oikeaaika FROM Tapahtumat  WHERE id =:tapahtumaid"
     haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id})
     tulos = haku.fetchall()
     if not tulos:
         flash("Tapahtumaa ei ole olemassa.")
+        return redirect(url_for("kalenteri"))
+    if tulos[0][1] < date.today():
+        flash("Tapahtumaan ei voi enään ilmoittautua.")
         return redirect(url_for("kalenteri"))
     sql = "SELECT tapahtuma_id FROM Ilmoittautumiset WHERE tapahtuma_id =:tapahtumaid AND kayttaja_id =:kayttaja"
     haku = db.session.execute(sql, {"tapahtumaid":tapahtuma_id, "kayttaja":current_user.id})
