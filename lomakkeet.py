@@ -1,6 +1,8 @@
-from flask_wtf import FlaskForm 
+from flask_wtf import FlaskForm
+from datetime import date
 from wtforms import StringField, PasswordField, TextAreaField, DateField
 from wtforms.validators import InputRequired, Email, Length
+from wtforms_components import DateRange
 
 class kirjaudu_f(FlaskForm):
     kayttaja_nimi = StringField("Käyttäjänimi", validators=[InputRequired(), Length(min=3, max=20)])
@@ -14,7 +16,7 @@ class rekisteroidy_f(FlaskForm):
 class uusi_tapahtuma_f(FlaskForm):
     nimi = StringField("Tapahtuman nimi", validators=[InputRequired(), Length(min=4, max=100)])
     kuvaus = TextAreaField("Tapahtuman kuvaus", validators=[InputRequired(), Length(min=10, max=1000)])
-    aika = DateField("Päivä muotoa   (2000-12-24)", validators=[InputRequired()])
+    aika = DateField("Päivä muotoa (2000-12-24)", validators=[InputRequired(), DateRange(min=date.today())])
 
 class omat_tiedot_lomake_f(FlaskForm):
     kuvaus = StringField("Kuvaus", validators=[InputRequired(), Length(min=5, max=400)])
