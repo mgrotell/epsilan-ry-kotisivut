@@ -68,4 +68,6 @@ Sivulla pystyy keskustella toisten käyttäjien kanssa käyttämällä keskustel
 
 ## Sovelluksen tila 13.12.2020
 
-Sivusto on nyt täydellisessä käyttökunnossa. Sivulta löytyy tapahtumakalenteri, oma profiili, top-lista ja keskustelualue. Moderaattoreilla on lisäksi tapahtumien luontisivu ja porttikielto sivu. Virheelliset pyynnot ja tyhjät lomakkeet indikoidaan. Sivustoa pääsee kokeilemaan yllä olevilla tunnuksilla. 
+Sivusto on nyt täydellisessä käyttökunnossa. Sivulta löytyy tapahtumakalenteri, oma profiili, top-lista ja keskustelualue. Moderaattoreilla on lisäksi tapahtumien luontisivu ja porttikielto sivu. Virheelliset pyynnot ja tyhjät lomakkeet indikoidaan. Sivustoa pääsee kokeilemaan yllä olevilla tunnuksilla.
+
+Saatu kurssiarvosana: 5
